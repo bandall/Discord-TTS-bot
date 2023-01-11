@@ -25,11 +25,11 @@ const rest = new REST({ version: '10' }).setToken(token);
 		for(const guildId of guilds) {
             
             const data = await rest.put(
-                // Routes.applicationGuildCommands(clientId, guildId),
-                // { body: commands },
+                Routes.applicationGuildCommands(clientId, guildId),
+                { body: commands },
 
-                Routes.applicationCommands(clientId),
-	            { body: commands },
+                // Routes.applicationCommands(clientId),
+	            // { body: commands },
 
             );
             console.log(`Successfully reloaded ${data.length} application (/) commands.`);

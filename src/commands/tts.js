@@ -11,7 +11,7 @@ module.exports = {
                 .setRequired(true)
         ),
 	async execute(interaction, client) {
-		log_server(`[${interaction.guild.name}:${interaction.user.username}] used tts => [${interaction.options.getString('text')}]`);
+		log_server(`[${interaction.guild.name}:${interaction.user.username}] added tts => [${interaction.options.getString('text')}]`);
         add_tts(interaction, client)
 	},
 };
