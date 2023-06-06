@@ -1,13 +1,13 @@
 {
   "name": "discord-bot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "music bot for jagalchi",
   "main": "index.js",
   "scripts": {
     "start": "nodemon src/app.js --exec babel-node",
     "deploy": "babel-node src/deploy-commands.js",
     "build": "rimraf ./build &&mkdirp ./build && babel -d ./build ./src && copyfiles -f ./src/config.json ./build/",
-    "production": "pm2 start ./build/app.js",
+    "production": "pm2 start ./build/app.js --name \"TTS Bot\"",
     "pm2": "pm2"
   },
   "author": "",
