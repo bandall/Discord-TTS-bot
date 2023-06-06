@@ -2,3 +2,5 @@ node_modules
 src/config.json
 voice
 .env
+config.json
+log.txt

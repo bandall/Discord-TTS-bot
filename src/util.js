@@ -1,4 +1,4 @@
-//import util from "util"
+import { environ } from "./config.json"
 const util = require("util");
 const fs = require("fs");
 class Mutex {
@@ -24,7 +24,11 @@ class Mutex {
 }
 const mutex = new Mutex();
 const log_server = async (d) => {
-    const date = new Date();
+    let date;
+    if(environ == "dev")
+        date = new Date(new Date().getTime() + 60 * 60 * 9);
+    if(environ == "server")
+        date = new Date(new Date().getTime() + 60 * 60 * 9 * 1000);
     const timeStamp = 
     "["+date.getFullYear().toString().padStart(4, "0")+
     "-"+(date.getMonth()+1).toString().padStart(2, "0")+
@@ -35,16 +39,16 @@ const log_server = async (d) => {
     const logText = timeStamp + " => " + util.format(d);
     console.log(logText);
 
-    // await mutex.acquire();
-    // {
-    //     try {
-    //         fs.writeFileSync('./log.txt', logText + "\n", { flag: 'a+' });
-    //     } catch (error) {
-    //         console.error("Can't Log!!");
-    //         console.error(error)
-    //     }
-    // }
-    // mutex.release();
+    await mutex.acquire();
+    {
+        try {
+            fs.writeFileSync('./log.txt', logText + "\n", { flag: 'a+' });
+        } catch (error) {
+            console.error("Can't Log!!");
+            console.error(error)
+        }
+    }
+    mutex.release();
 }
 
 const secToStamp = (time) => {

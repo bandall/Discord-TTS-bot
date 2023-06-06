@@ -1,4 +1,4 @@
-const { createAudioResource, createAudioPlayer, StreamType, AudioPlayerStatus, joinVoiceChannel } = require("@discordjs/voice");
+const { createAudioResource, createAudioPlayer, StreamType, AudioPlayerStatus, joinVoiceChannel,  VoiceConnectionStatus, entersState } = require("@discordjs/voice");
 import discordTTS  from "discord-tts";
 import * as googleTTS from 'google-tts-api';
 import fs, {createReadStream} from "fs"
@@ -30,12 +30,38 @@ const add_tts = async (interaction, client) => {
                 guildId: interaction.guild.id,
                 adapterCreator: interaction.guild.voiceAdapterCreator,
             });
+            connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
+                try {
+                    await Promise.race([
+                        entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+                        entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+                    ]);
+                    // Seems to be reconnecting to a new channel - ignore disconnect
+                } catch (error) {
+                    // Seems to be a real disconnect which SHOULDN'T be recovered from
+                    handleDisconnect(interaction, client);
+                }
+            });
+            // due to discord udp change
+            const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
+                const newUdp = Reflect.get(newNetworkState, 'udp');
+                clearInterval(newUdp?.keepAliveInterval);
+            };
+            // voice connection monitor
+            connection.on('stateChange', (oldState, newState) => {
+                log_server(`Connection transitioned from ${oldState.status} to ${newState.status}`);
+                Reflect.get(oldState, 'networking')?.off('stateChange', networkStateChangeHandler);
+                Reflect.get(newState, 'networking')?.on('stateChange', networkStateChangeHandler);
+            });   
             const player = createAudioPlayer();
             player.on('error', error => {
                 speak_next(interaction, client);
             });
             player.on(AudioPlayerStatus.Idle, () => {
                 speak_next(interaction, client);
+            });
+            player.on('stateChange', (oldState, newState) => {
+                log_server(`Connection transitioned from ${oldState.status} to ${newState.status}`);
             });
             connection.subscribe(player);
             serverQueue = {
@@ -208,5 +234,27 @@ const leave = async (interaction, client) => {
         log_server(error);
     }
 }
+
+const handleDisconnect = async (interaction, client) => {
+    log_server(`[${interaction.guild.name}] forced voice disconnect`);
+    if(!interaction || !client) {
+        log_server("[ERROR] => handleDisconnect has null args")
+        return;
+    }
+    let serverQueue = queueMap.get(interaction.guild.id);
+    if(!serverQueue) {
+        log_server("[ERROR] => handleDisconnect can't find serverQueue")
+        return;
+    }
+    try {
+        serverQueue.player.stop();
+        serverQueue.connection.destroy();
+        queueMap.delete(interaction.guild.id);
+    } catch (error) {
+        log_server(`[ERROR] => handleDisconnect can't disconnect voice channel`);
+        log_server(error);
+    }
+}
+
 
 module.exports = { add_tts, leave };

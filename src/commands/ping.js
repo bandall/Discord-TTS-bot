@@ -5,7 +5,7 @@ module.exports = {
 		.setName('ping')
 		.setDescription('Replies with Pong!'),
 	async execute(interaction) {
-		log_server(`[${interaction.guild.name}:${interaction.user.username}] used ping`);
+		await log_server(`[${interaction.guild.name}:${interaction.user.username}] used ping`);
 		await interaction.reply('Pong!');
 	},
 };

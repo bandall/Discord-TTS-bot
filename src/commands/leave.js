@@ -8,7 +8,7 @@ module.exports = {
         .setDescription('음성 채팅방에서 나갑니다.'),
 
         async execute(interaction, client) {
-            leave(interaction, client);
+            await leave(interaction, client);
         },
 
 };

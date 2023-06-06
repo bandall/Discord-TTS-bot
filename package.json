@@ -4,9 +4,11 @@
   "description": "music bot for jagalchi",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon src/app.js --exec babel-node",
-    "deploy": "babel-node src/deploy-commands.js "
+    "deploy": "babel-node src/deploy-commands.js",
+    "build": "rimraf ./build &&mkdirp ./build && babel -d ./build ./src && copyfiles -f ./src/config.json ./build/",
+    "production": "pm2 start ./build/app.js",
+    "pm2": "pm2"
   },
   "author": "",
   "license": "ISC",
@@ -14,16 +16,17 @@
     "@babel/cli": "^7.20.7",
     "@babel/node": "^7.20.7",
     "@discordjs/opus": "^0.8.0",
-    "@discordjs/voice": "^0.14.0",
+    "@discordjs/voice": "^0.16.0",
     "cld": "^2.8.4",
     "discord-tts": "^1.2.2",
-    "discord.js": "^14.7.1",
+    "discord.js": "^14.11.0",
     "dotenv": "^16.0.3",
     "ffmpeg-static": "^4.4.1",
     "fs": "^0.0.1-security",
     "google-tts-api": "^2.0.2",
     "libsodium-wrappers": "^0.7.10",
     "nodemon": "^2.0.20",
+    "openai": "^3.2.1",
     "path": "^0.12.7",
     "ytdl-core": "^4.11.2"
   },
