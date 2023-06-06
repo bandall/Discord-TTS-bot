@@ -4,3 +4,4 @@ voice
 .env
 config.json
 log.txt
+build
