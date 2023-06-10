@@ -42,17 +42,17 @@ const add_tts = async (interaction, client) => {
                     handleDisconnect(interaction, client);
                 }
             });
-            // due to discord udp change
-            const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
-                const newUdp = Reflect.get(newNetworkState, 'udp');
-                clearInterval(newUdp?.keepAliveInterval);
-            };
-            // voice connection monitor
-            connection.on('stateChange', (oldState, newState) => {
-                log_server(`Connection transitioned from ${oldState.status} to ${newState.status}`);
-                Reflect.get(oldState, 'networking')?.off('stateChange', networkStateChangeHandler);
-                Reflect.get(newState, 'networking')?.on('stateChange', networkStateChangeHandler);
-            });   
+            // // due to discord udp change
+            // const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
+            //     const newUdp = Reflect.get(newNetworkState, 'udp');
+            //     clearInterval(newUdp?.keepAliveInterval);
+            // };
+            // // voice connection monitor
+            // connection.on('stateChange', (oldState, newState) => {
+            //     log_server(`Connection transitioned from ${oldState.status} to ${newState.status}`);
+            //     Reflect.get(oldState, 'networking')?.off('stateChange', networkStateChangeHandler);
+            //     Reflect.get(newState, 'networking')?.on('stateChange', networkStateChangeHandler);
+            // });   
             const player = createAudioPlayer();
             player.on('error', error => {
                 speak_next(interaction, client);
@@ -60,9 +60,9 @@ const add_tts = async (interaction, client) => {
             player.on(AudioPlayerStatus.Idle, () => {
                 speak_next(interaction, client);
             });
-            player.on('stateChange', (oldState, newState) => {
-                log_server(`Connection transitioned from ${oldState.status} to ${newState.status}`);
-            });
+            // player.on('stateChange', (oldState, newState) => {
+            //     log_server(`Connection transitioned from ${oldState.status} to ${newState.status}`);
+            // });
             connection.subscribe(player);
             serverQueue = {
                 tts_queue: [],

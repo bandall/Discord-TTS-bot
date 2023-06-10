@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon src/app.js --exec babel-node",
     "deploy": "babel-node src/deploy-commands.js",
-    "build": "rimraf ./build &&mkdirp ./build && babel -d ./build ./src && copyfiles -f ./src/config.json ./build/",
+    "build": "rimraf ./build && mkdirp ./build && mkdirp ./build/voice && babel -d ./build ./src && copyfiles -f ./src/config.json ./build/",
     "production": "pm2 start ./build/app.js --name \"TTS Bot\"",
     "pm2": "pm2"
   },
@@ -28,7 +28,6 @@
     "nodemon": "^2.0.20",
     "openai": "^3.2.1",
     "path": "^0.12.7",
-    "pm2": "^5.3.0",
     "ytdl-core": "^4.11.2"
   },
   "devDependencies": {
