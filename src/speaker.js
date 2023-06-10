@@ -3,9 +3,15 @@ import discordTTS  from "discord-tts";
 import * as googleTTS from 'google-tts-api';
 import fs, {createReadStream} from "fs"
 import cld from "cld"
+import ffmpegPath from "ffmpeg-static";
+import ffmpeg from "fluent-ffmpeg";
 import { log_server, sleep } from "./util";
 
+ffmpeg.setFfmpegPath(ffmpegPath);
+
 const queueMap = new Map();
+let voice_speed = "2.0";
+
 const add_tts = async (interaction, client) => {
     if(!interaction || !client) {
         interaction.reply({ content: '🚫 Discord 서버와의 통신에 오류가 발생했습니다.', ephemeral: true });
@@ -68,7 +74,7 @@ const add_tts = async (interaction, client) => {
                 tts_queue: [],
                 player: player,
                 connection: connection,
-                filePath: interaction.guild.id
+                filePath: interaction.guild.id,
             }
             queueMap.set(interaction.guild.id, serverQueue);
             serverQueue.tts_queue.push(...parsedArray);
@@ -85,6 +91,30 @@ const add_tts = async (interaction, client) => {
     }
     serverQueue.tts_queue.push(...parsedArray);
     interaction.reply({ content: 'TTS added!', ephemeral: true });
+}
+
+const set_voice_speed = async (interaction, client) => {
+    if(!interaction || !client) {
+        interaction.reply({ content: '🚫 Discord 서버와의 통신에 오류가 발생했습니다.', ephemeral: true });
+        return;
+    }
+    if(!interaction.member.voice.channel) {
+        interaction.reply({ content: '🚫 tts 기능을 사용하기 위해서는 음성 채널에 참가해야 합니다.', ephemeral: true });
+        return;
+    }
+
+    let voice_speed_input = interaction.options.getNumber('audio_speed').toFixed(1);
+        
+    log_server(`입력된 배속 값 => ${voice_speed_input}`);
+    
+    if (voice_speed_input < 0.5 || voice_speed_input > 10) {
+        interaction.reply({ content: '0.5 ~ 10.0 사이의 배속 지정이 가능합니다.', ephemeral: true });
+        return;
+    }
+    voice_speed = voice_speed_input;
+    log_server(`설정된 배속 => ${voice_speed}`);
+    interaction.reply({ content: `설정된 배속 => ${voice_speed}`, ephemeral: true });
+    return;
 }
 
 const parseStringUnder200 = async (text) => {
@@ -128,7 +158,7 @@ const speak_tts = async (interaction, client) => {
     }
     const tts_text = serverQueue.tts_queue[0];
     const player = serverQueue.player;
-    const tts_file = `./voice/${interaction.guild.id}.mp3`;
+    const tts_file = `./voice/_${interaction.guild.id}.mp3`;
 
     let TTStype = false;
     try {
@@ -180,7 +210,8 @@ const makeTTSFile = async (interaction, text) => {
     try {
         const filename = `./voice/${interaction.guild.id}.mp3`;
         const fileContents = Buffer.from(base64TTS, 'base64');
-        await fs.writeFileSync(filename, fileContents);
+        fs.writeFileSync(filename, fileContents);
+        await change_audio_speed(filename, `./voice/_${interaction.guild.id}.mp3`, voice_speed);
     } catch (error) {
         log_server('save mp3 file error');
         log_server(error);
@@ -189,12 +220,28 @@ const makeTTSFile = async (interaction, text) => {
     return language;
 }
 
+const change_audio_speed = async (input, output, speed) => {
+    return new Promise((resolve, reject) => {
+        ffmpeg()
+            .input(input)
+            .outputOption('-ab', '192k')
+            .audioFilter(`atempo=${speed}`)
+            .saveToFile(output)
+            .on('end', () => {
+                resolve();
+            })
+            .on('error', (error) => {
+                reject(new Error(error));
+            });
+    })
+}
+
 const speak_next = async (interaction, client) => {
     let serverQueue = queueMap.get(interaction.guild.id)
     if(serverQueue) {
         serverQueue.tts_queue.shift();
         if (serverQueue.tts_queue.length == 0) {
-            for(let i = 0; i < 600; i++) {
+            for(let i = 0; i < 3600; i++) {
                 await sleep(1000);
                 let tmpServerQueue = queueMap.get(interaction.guild.id);
                 if(!tmpServerQueue) return;
@@ -257,4 +304,4 @@ const handleDisconnect = async (interaction, client) => {
 }
 
 
-module.exports = { add_tts, leave };
+module.exports = { add_tts, leave, set_audio_speed: set_voice_speed };
