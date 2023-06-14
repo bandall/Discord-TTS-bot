@@ -113,7 +113,7 @@ const set_voice_speed = async (interaction, client) => {
     }
     voice_speed = voice_speed_input;
     log_server(`설정된 배속 => ${voice_speed}`);
-    interaction.reply({ content: `설정된 배속 => ${voice_speed}`, ephemeral: true });
+    interaction.reply({ content: `설정된 배속 => ${voice_speed}`});
     return;
 }
 
@@ -181,7 +181,7 @@ const speak_tts = async (interaction, client) => {
         player.play(resource);
     } catch (error) {
         speak_next(interaction, client);
-        console.log(error);
+        log_server(error);
     }
 }
 
@@ -203,7 +203,7 @@ const makeTTSFile = async (interaction, text) => {
         });
     } catch (error) {
         log_server('google tts api error');
-        console.log(error);
+        log_server(error);
         return false;
     }
 
