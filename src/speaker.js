@@ -191,7 +191,7 @@ const makeTTSFile = async (interaction, text) => {
         language = (await cld.detect(text)).languages[0].code;
     } catch (error) {
         log_server('Language specify miss');
-        return false;
+        language = "ko";
     }
 
     let base64TTS;
