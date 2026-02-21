@@ -16,7 +16,7 @@
     "@babel/cli": "^7.20.7",
     "@babel/node": "^7.20.7",
     "@discordjs/opus": "^0.8.0",
-    "@discordjs/voice": "^0.16.0",
+    "@discordjs/voice": "^0.17.0",
     "cld": "^2.8.4",
     "discord-tts": "^1.2.2",
     "discord.js": "^14.11.0",

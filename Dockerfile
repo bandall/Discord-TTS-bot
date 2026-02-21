@@ -1,5 +1,5 @@
 # 빌드 스테이지
-FROM node:18.4.0 AS builder
+FROM node:18.20.4 AS builder
 
 LABEL maintainer="jsm5315@ajou.ac.kr"
 
@@ -11,7 +11,7 @@ RUN npm install copyfiles -g
 RUN npm run build
 
 # 최종 스테이지
-FROM node:18.4.0
+FROM node:18.20.4
 
 # 빌드된 파일만 복사
 COPY --from=builder /home/node/app /home/node/app
